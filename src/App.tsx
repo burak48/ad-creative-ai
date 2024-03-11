@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import RickAndMortyAutocomplete from './RickAndMortyAutocomplete';
+import RickAndMortyAutocomplete from './components/RickAndMortyAutocomplete';
 import './App.css'
 
 const App: React.FC = () => {

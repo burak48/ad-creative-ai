@@ -23,6 +23,8 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     const [selectedIndex, setSelectedIndex] = useState(-1);
     const listRef = useRef<HTMLUListElement>(null);
 
+    const apiUrl = process.env.REACT_APP_RICK_AND_MORTY_API_URL;
+
     useEffect(() => {
         if (!input) {
             setCharacters([]);
@@ -34,7 +36,7 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
             setError('');
 
             try {
-                const response = await axios.get('https://rickandmortyapi.com/api/character', {
+                const response = await axios.get(`${apiUrl}/character`, {
                     params: { name: input },
                 });
 
@@ -54,7 +56,7 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
         };
 
         fetchData();
-    }, [input]);
+    }, [input, apiUrl]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setInput(event.target.value);
@@ -117,14 +119,14 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     const handleCharacterSelect = (character: any) => {
         if (character && character.id && character.name) {
             const index = value.findIndex((c: any) => c.id === character.id);
-    
+
             const newCharacters = index === -1
                 ? [...value, character]
                 : value.filter((c: any) => c.id !== character.id);
-    
+
             setCharacters(newCharacters);
             onChange(newCharacters);
-    
+
             // Clear the input value
             if (inputRef.current) {
                 inputRef.current.value = '';
