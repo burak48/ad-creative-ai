@@ -115,21 +115,23 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     };
 
     const handleCharacterSelect = (character: any) => {
-        const index = value.findIndex((c: any) => c.id === character.id);
-
-        const newCharacters = index === -1
-            ? [...value, character]
-            : value.filter((c: any) => c.id !== character.id);
-
-        setCharacters(newCharacters);
-        onChange(newCharacters);
-
-        // Clear the input value
-        if (inputRef.current) {
-            inputRef.current.value = '';
+        if (character && character.id && character.name) {
+            const index = value.findIndex((c: any) => c.id === character.id);
+    
+            const newCharacters = index === -1
+                ? [...value, character]
+                : value.filter((c: any) => c.id !== character.id);
+    
+            setCharacters(newCharacters);
+            onChange(newCharacters);
+    
+            // Clear the input value
+            if (inputRef.current) {
+                inputRef.current.value = '';
+            }
+            setInput('');
+            setSelectedIndex(-1);
         }
-        setInput('');
-        setSelectedIndex(-1);
     };
 
     const handleRemoveCharacter = (character: Character) => {
@@ -173,7 +175,7 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
                     ref={listRef}
                     onKeyDown={handleListKeyDown}
                 >
-                    {characters.map((character: any, index: number) => (
+                    {characters.filter(character => character).map((character: any, index: number) => (
                         <li
                             key={character.id}
                             className={classNames("rm-autocomplete__item", {
