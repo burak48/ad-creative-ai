@@ -20,6 +20,8 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
+    const [selectedIndex, setSelectedIndex] = useState(-1);
+    const listRef = useRef<HTMLUListElement>(null);
 
     useEffect(() => {
         if (!input) {
@@ -62,6 +64,50 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'Enter') {
             event.preventDefault();
+            if (selectedIndex >= 0 && selectedIndex < characters.length) {
+                handleCharacterSelect(characters[selectedIndex]);
+            } else {
+                if (inputRef.current) {
+                    inputRef.current.blur();
+                }
+            }
+        } else if (event.key === "ArrowDown") {
+            event.preventDefault();
+            setSelectedIndex((prevIndex) => {
+                const newIndex = Math.min(prevIndex + 1, characters.length - 1);
+                if (listRef.current) {
+                    const listItems = Array.from(listRef.current.children);
+                    if (newIndex >= 0 && newIndex < listItems.length) {
+                        listItems[newIndex].scrollIntoView({ behavior: "smooth" });
+                    }
+                }
+                return newIndex;
+            });
+        } else if (event.key === "ArrowUp") {
+            event.preventDefault();
+            setSelectedIndex((prevIndex) => {
+                const newIndex = Math.max(prevIndex - 1, -1);
+                if (listRef.current) {
+                    const listItems = Array.from(listRef.current.children);
+                    if (newIndex >= 0 && newIndex < listItems.length) {
+                        listItems[newIndex].scrollIntoView({ behavior: "smooth" });
+                    }
+                }
+                return newIndex;
+            });
+        }
+    };
+
+
+    const handleListKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            if (event.currentTarget.contains(inputRef.current)) {
+                return;
+            }
+            handleCharacterSelect(characters[Number(event.currentTarget.dataset.index)]);
+        } else if (event.key === "Escape") {
+            event.preventDefault();
             if (inputRef.current) {
                 inputRef.current.blur();
             }
@@ -71,20 +117,19 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
     const handleCharacterSelect = (character: any) => {
         const index = value.findIndex((c: any) => c.id === character.id);
 
-        if (index === -1) {
-            setCharacters([...value, character]);
-            onChange([...value, character]);
-        } else {
-            const newCharacters: any = value.filter((c: any) => c.id !== character.id);
-            setCharacters(newCharacters);
-            onChange(newCharacters);
-        }
+        const newCharacters = index === -1
+            ? [...value, character]
+            : value.filter((c: any) => c.id !== character.id);
+
+        setCharacters(newCharacters);
+        onChange(newCharacters);
 
         // Clear the input value
         if (inputRef.current) {
             inputRef.current.value = '';
         }
         setInput('');
+        setSelectedIndex(-1);
     };
 
     const handleRemoveCharacter = (character: Character) => {
@@ -92,8 +137,6 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
         setCharacters(newValue);
         onChange(newValue);
     };
-
-    const highlightedIndex = value.findIndex((id) => id === characters.find((c) => c.id === id)?.id);
 
     const highlightSearchText = (text: string, searchInput: string) => {
         const regex = new RegExp(`(${searchInput})`, 'gi');
@@ -125,19 +168,24 @@ const RickAndMortyAutocomplete: React.FC<Props> = ({ value, onChange }) => {
             {loading && <div className="rm-autocomplete__loading">Loading...</div>}
             {error && <div className="rm-autocomplete__error">{error}</div>}
             {input && !loading && !error && (
-                <ul className="rm-autocomplete__list">
-                    {characters.map((character: any) => (
+                <ul
+                    className="rm-autocomplete__list"
+                    ref={listRef}
+                    onKeyDown={handleListKeyDown}
+                >
+                    {characters.map((character: any, index: number) => (
                         <li
                             key={character.id}
-                            className={classNames('rm-autocomplete__item', {
-                                'rm-autocomplete__item--selected': highlightedIndex === value.indexOf(character),
+                            className={classNames("rm-autocomplete__item", {
+                                "rm-autocomplete__item--selected": selectedIndex === index,
                             })}
                             onClick={() => handleCharacterSelect(character)}
+                            tabIndex={selectedIndex === index ? 0 : -1}
+                            data-index={index}
                         >
                             <input
                                 type="checkbox"
                                 className="rm-autocomplete__checkbox"
-                                checked={value.includes(character)}
                                 onChange={() => handleCharacterSelect(character)}
                             />
                             <div className="rm-autocomplete__image-and-info">
