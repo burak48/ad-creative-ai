@@ -154,15 +154,17 @@
 
 .centered {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+  margin-bottom: 20px;
 }
 
 .center-input {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 100px;
-  padding: 0 20px;
   width: 100%;
   max-width: 500px;
 }

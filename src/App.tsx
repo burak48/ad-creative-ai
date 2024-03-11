@@ -7,6 +7,7 @@ const App: React.FC = () => {
 
   return (
     <div className="App centered">
+      <h1>RICK AND MORTY</h1>
       <div className="center-input">
         <RickAndMortyAutocomplete value={selectedCharacters} onChange={setSelectedCharacters} />
       </div>
